@@ -1,22 +1,75 @@
 '''
 >>> Author: JAAR
->>> Date: 03/27/2024
+>>> Date: 03/28/2024
 >>> Program: Hangman Game
->>> Version 1.2
+>>> Version 1.3
 '''
 
 '''
->>> Generates an instance of a game of hangman for the player. A word is selected at random from a dictionary based on size inputted by the player. If there isn't a word of that size in the dictionary, the player will be prompted for another length.
->>> The Players win/loss ratio will be tracked and the percent wins will be given after all games conclude.
+>>> Generates an instance of a game of hangman for the player. A word is selected at random from a dictionary based on size inputted by the player. If there isn't a word of that size in the dictionary, the player will be prompted for another word length.
+>>> The Players win/loss ratio will be tracked and statistics will be precented after the last game concludes.
 '''
-
 import random
+
+'''
+>>> UPDATE: Include a main method.
+'''
+def main() :
+    print('Lets play Hangman!')
+    GUESSES_ALLOWED = 10
+    response = 'yes'
+    results = [] # TODO: Results isn't in use yet; at the end of each game. Update to have either a win or loss represented in the results.
+
+    while response == 'yes' :
+        response = None
+        guesses_used = 0 # resets counter
+        guessed_letters = [] # Contains all guesses made
+        answer = list(get_word())
+        print(*answer) # TODO: REMOVE AFTER TROUBLESHOOTING
+        blank_word = [ "_" for _ in enumerate(answer)]
+        print(*blank_word)
+
+        while answer != blank_word and guesses_used < GUESSES_ALLOWED :
+            guess = ""
+            # Checks to see if the length of the input is 1 and if it's alphabetical.
+            # NOTE: Check if try:except fits better.
+            while len(guess) != 1 or (len(guess) == 1 and not guess.isalpha()) :
+                guess = input('Enter a guess: ').lower()
+            # NOTE: Could be lumped into the try:except if implemented.
+            if guess in guessed_letters :
+                print("You've already entered that letter!")
+                continue
+            else :
+                guessed_letters.append(guess)
+
+            # Checks to see if the input is an answer key and updates the guess counter as needed.
+            if guess in answer :
+                for index, char in enumerate(answer) :
+                    if char == guess :
+                        blank_word[index] = guess
+            else :
+                guesses_used += 1
+                print(f'You have {GUESSES_ALLOWED - guesses_used} guesses left!')
+
+            # UPDATE: Appends the wins/losses to a list results
+            if answer == blank_word :
+                print(f'Congratulation! You got it right with {GUESSES_ALLOWED - guesses_used} guesses remaining')
+                print(f'The answer was: {"".join(answer)}')
+                results.append('w')
+            elif guesses_used == 10 : # Update: Displays a different output when the player looses.
+                print(f'You\'ve used all {GUESSES_ALLOWED}! The answer was {"".join(answer)}.')
+                results.append('l')
+            else:
+                print(*blank_word)
+
+        while response != 'yes' and response != 'no' :
+            response = input('Do you want to play again?: ').lower()
+    stats(results)
 
 '''
 >>> Asks the user for an input and then verifies the input was an integer. Afterwards collects all words of that length from the dictionary. A random word is then selected from the list to be used as the answer for the current game.
 Return: str
-
->>> Update: Returns string representing the answer for hangman game. Gets answer from a file with words in plain text.
+>>> TODO: Find a more inclusive dictionary.
 '''
 def get_word()-> str :
     list = []
@@ -43,54 +96,15 @@ def get_word()-> str :
     return list[random.randint(0, len(list) - 1)]
 
 '''
--------------------------------------------------------------------------------
->>> main
+>>> Takes a list containing the results for each game played and calculates the number of wins and the win-loss ratio. Then prints it out.
+>>> Param: list results
 '''
-print('Lets play Hangman!')
-GUESSES_ALLOWED = 10
-response = 'yes'
-results = [] # TODO: Results isn't in use yet; at the end of each game. Update to have either a win or loss represented in the results.
+def stats(results = []) :
+    print(f'''
+    Total Games Played: {len(results)}
+    Wins:               {results.count('w')}
+    Percent Win:        {(results.count('w') / len(results)*100):.0f}%''')
+    # Update: Shows percent as a whole number.
 
-while response == 'yes':
-    response = None
-    guesses_used = 0 # resets guesses used.
-    guessed_letters = [] # Update: Contains a list of all letters already used.
-    answer = list(get_word()) # Update: Uses list for answer vs str.
-    print(*answer)
-    blank_word = [ "_" for _ in enumerate(answer)] # Update: Uses pythonic syntax to fill in blank word.
-    print(*blank_word)
-
-    while answer != blank_word and guesses_used < GUESSES_ALLOWED :
-        guess = ""
-        # Checks to see if the length of the input is 1 and if it's alphabetical.
-        while len(guess) != 1 or (len(guess) == 1 and not guess.isalpha()) :
-            guess = input('Enter a guess: ').lower()
-
-        # Update: Check if the guess was already used and prompts error if so. Otherwise, adds the guess to the list of guesses used.
-        if guess in guessed_letters :
-            print("You've already entered that letter!")
-            continue
-        else :
-            guessed_letters.append(guess)
-
-        # Checks to see if the input is an answer key and updates the guess counter as needed.
-        if guess in answer :
-            for index, char in enumerate(answer) :
-                if char == guess :
-                    blank_word[index] = guess
-        else :
-            guesses_used += 1
-            print(f'You have {GUESSES_ALLOWED - guesses_used} guesses left!')
-
-        if answer == blank_word :
-            print(f'Congratulation! You got it right with {GUESSES_ALLOWED - guesses_used} guesses remaining')
-            print(f'The answer was: {"".join(answer)}')
-        elif guesses_used == 10 : # Update: Displays a different output when the player looses.
-            print(f'You\'ve used all {GUESSES_ALLOWED}! The answer was {"".join(answer)}.')
-        else:
-            print(*blank_word)
-
-    while response != 'yes' and response != 'no' :
-        response = input('Do you want to play again?: ').lower()
-
-    # TODO: Once the games end, will show the user their final scores. How many they got right and wrong.
+if __name__ == "__main__" :
+    main()
